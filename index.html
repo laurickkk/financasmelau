@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0E1420">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nossas Finanças">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Nossas Finanças</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #EAEDF1; }
+  body { padding-top: env(safe-area-inset-top); }
+  #root { min-height: 100vh; }
+  * { -webkit-tap-highlight-color: transparent; }
+</style>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+
+
+/* ------------------------------------------------------------------ */
+/*  PALETA E TIPOGRAFIA                                                */
+/* ------------------------------------------------------------------ */
+const C = {
+  bg: "#EAEDF1",
+  surface: "#FFFFFF",
+  ink: "#0E1420",
+  muted: "#6A7480",
+  faint: "#9AA3AD",
+  line: "#DDE2E8",
+  conj: "#28477A",
+  lauro: "#6A4C93",
+  mel: "#0E7490",
+  ok: "#1A7F4B",
+  bad: "#B02A37",
+  fora: "#7C8794",
+};
+
+const MONO = 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace';
+const SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+
+const CATEGORIAS = [
+  "Moradia",
+  "Alimentação",
+  "Trabalho",
+  "Assinaturas",
+  "Saúde",
+  "Presentes",
+  "Coisas pra nós",
+  "Família",
+  "Investimentos",
+];
+
+/* ------------------------------------------------------------------ */
+/*  DADOS INICIAIS                                                     */
+/* ------------------------------------------------------------------ */
+const it = (nome, valor, categoria) => ({ id: uid(), nome, valor, categoria });
+const parc = (nome, valor, atual, total, categoria) => ({
+  id: uid(),
+  nome,
+  valor,
+  atual,
+  total,
+  categoria,
+});
+
+function uid() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function mesAgosto() {
+  return {
+    id: "2026-08",
+    rotulo: "Agosto de 2026",
+    receitas: [
+      it("Salário Mel", 4500),
+      it("Salário Lauro", 4500),
+      it("Comissões", 0),
+      it("Ajudas", 1000),
+    ],
+    despesasFixas: [
+      it("Guardado caixinha turbo", 750, "Investimentos"),
+      it("Financiamento casa", 1788.87, "Moradia"),
+      it("Evolução de obra", 526.31, "Moradia"),
+      it("Consórcio", 696.55, "Moradia"),
+      it("Imposto de renda", 0, "Moradia"),
+      it("Seguro celular", 185, "Assinaturas"),
+      it("Claro Mel profissional", 45, "Trabalho"),
+      it("Claro Lari", 34.8, "Família"),
+    ],
+    cartoes: [
+      {
+        id: "inter",
+        nome: "Banco Inter",
+        dono: "Conjunto",
+        tipo: "conjunto",
+        cor: C.conj,
+        fatura: 2237.88,
+        fixos: [
+          it("Claude", 120, "Trabalho"),
+          it("Jusbrasil", 58.9, "Trabalho"),
+          it("Média almoço mensal", 750, "Alimentação"),
+        ],
+        parcelamentos: [
+          parc("Bicicleta", 64.22, 8, 9, "Coisas pra nós"),
+          parc("Anuidade da OAB", 80, 8, 10, "Trabalho"),
+          parc("Iphone Mel", 679.9, 3, 10, "Coisas pra nós"),
+        ],
+      },
+      {
+        id: "nubank",
+        nome: "Nubank",
+        dono: "Lauro",
+        tipo: "individual",
+        cor: C.lauro,
+        fatura: 2344.66,
+        fixos: [
+          it("Espaço do Google", 14.99, "Assinaturas"),
+          it("Moovit", 0, "Assinaturas"),
+        ],
+        parcelamentos: [
+          parc("Anuidade da OAB", 80, 8, 10, "Trabalho"),
+          parc("Formatura da Helena", 220, 1, 3, "Presentes"),
+          parc("Tratamento pra Calvície", 96.6, 2, 6, "Saúde"),
+          parc("Catho", 289.9, 6, 12, "Trabalho"),
+        ],
+      },
+      {
+        id: "mercadopago",
+        nome: "Mercado Pago",
+        dono: "Mel",
+        tipo: "individual",
+        cor: C.mel,
+        fatura: 2083.44,
+        fixos: [
+          it("Vale transporte", 250, "Trabalho"),
+          it("iCloud armazenamento", 5.9, "Assinaturas"),
+          it("Academia", 89.99, "Saúde"),
+          it("Google fotos", 14.99, "Assinaturas"),
+        ],
+        parcelamentos: [
+          parc("Sanfona", 205.9, 6, 10, "Presentes"),
+          parc("Fotos formatura", 166.66, 6, 12, "Coisas pra nós"),
+          parc("Livros", 99.37, 6, 6, "Coisas pra nós"),
+          parc("Notebook", 269.94, 4, 18, "Trabalho"),
+          parc("Ração do George", 81, 2, 3, "Coisas pra nós"),
+          parc("Mercado livre diversos", 136.95, 2, 2, "Coisas pra nós"),
+          parc("Surpresa 1", 120.58, 2, 2, "Presentes"),
+          parc("Surpresa 2", 155.71, 2, 2, "Presentes"),
+        ],
+      },
+      {
+        id: "avulso-mel",
+        nome: "Cartão avulso",
+        dono: "Mel",
+        tipo: "avulso",
+        cor: C.fora,
+        fatura: 528.15,
+        fixos: [],
+        parcelamentos: [],
+      },
+    ],
+  };
+}
+
+function mesSetembro() {
+  const m = avancarMes(mesAgosto());
+  // ajustes reais informados: obra variou e as faturas já foram lançadas
+  const obra = m.despesasFixas.find((d) => d.nome === "Evolução de obra");
+  if (obra) obra.valor = 513.98;
+  m.cartoes.forEach((c) => {
+    c.fatura = soma(c.fixos) + soma(c.parcelamentos);
+  });
+  return m;
+}
+
+function dadosIniciais() {
+  return { meses: [mesAgosto(), mesSetembro()], mesAtivo: "2026-08" };
+}
+
+/* ------------------------------------------------------------------ */
+/*  MOTOR DE CÁLCULO — espelha a planilha                              */
+/* ------------------------------------------------------------------ */
+const soma = (arr) => arr.reduce((a, b) => a + (Number(b.valor) || 0), 0);
+
+function calcular(mes) {
+  const orcamento = soma(mes.receitas);
+  const fixasGerais = soma(mes.despesasFixas);
+
+  const conjunto = mes.cartoes.find((c) => c.tipo === "conjunto");
+  const fixosConj = soma(conjunto.fixos);
+  const parcConj = soma(conjunto.parcelamentos);
+  const comprometidoConj = fixosConj + parcConj;
+
+  const despesaTotal = fixasGerais + comprometidoConj;
+  const restante = orcamento - despesaTotal;
+  const sobraPraCada = restante / 2;
+
+  const avulsoConj = conjunto.fatura - comprometidoConj;
+  const metadeConj = avulsoConj / 2;
+
+  const faturaIgualComprometido = (c) => {
+    const comp = soma(c.fixos) + soma(c.parcelamentos);
+    return Math.abs(c.fatura - comp) < 0.01;
+  };
+
+  const pessoas = mes.cartoes
+    .filter((c) => c.tipo === "individual")
+    .map((c) => {
+      const fixos = soma(c.fixos);
+      const parcs = soma(c.parcelamentos);
+      const sobraReal = sobraPraCada - fixos - parcs;
+      const avulso = c.fatura - fixos - parcs;
+      const foraDoRateio = mes.cartoes.filter(
+        (x) => x.tipo === "avulso" && x.dono === c.dono
+      );
+      const semFatura = faturaIgualComprometido(c);
+      return {
+        cartao: c,
+        fixos,
+        parcs,
+        comprometido: fixos + parcs,
+        sobraReal,
+        avulso,
+        metadeConj,
+        saldo: sobraReal - avulso - metadeConj,
+        foraDoRateio,
+        foraTotal: foraDoRateio.reduce((a, x) => a + (Number(x.fatura) || 0), 0),
+        semFatura,
+      };
+    });
+
+  return {
+    orcamento,
+    fixasGerais,
+    despesaTotal,
+    restante,
+    sobraPraCada,
+    conjunto,
+    fixosConj,
+    parcConj,
+    comprometidoConj,
+    avulsoConj,
+    metadeConj,
+    pessoas,
+  };
+}
+
+function analisePorCategoria(mes, calc) {
+  const mapa = {};
+  const add = (item, origem, cor) => {
+    const cat = item.categoria || "Sem categoria";
+    if (!mapa[cat]) mapa[cat] = { total: 0, partes: {} };
+    mapa[cat].total += Number(item.valor) || 0;
+    if (!mapa[cat].partes[origem]) mapa[cat].partes[origem] = { valor: 0, cor };
+    mapa[cat].partes[origem].valor += Number(item.valor) || 0;
+  };
+
+  mes.despesasFixas.forEach((d) => add(d, "Conjunto", C.conj));
+  mes.cartoes.forEach((c) => {
+    const origem =
+      c.tipo === "conjunto"
+        ? "Conjunto"
+        : c.tipo === "avulso"
+        ? `${c.dono} (fora do rateio)`
+        : c.dono;
+    [...c.fixos, ...c.parcelamentos].forEach((i) => add(i, origem, c.cor));
+  });
+
+  return Object.entries(mapa)
+    .map(([nome, v]) => ({
+      nome,
+      total: v.total,
+      partes: Object.entries(v.partes).map(([k, p]) => ({ origem: k, ...p })),
+      pct: calc.orcamento ? v.total / calc.orcamento : 0,
+    }))
+    .sort((a, b) => b.total - a.total);
+}
+
+function avancarMes(mes) {
+  const [ano, m] = mes.id.split("-").map(Number);
+  const prox = m === 12 ? { a: ano + 1, m: 1 } : { a: ano, m: m + 1 };
+  const nomes = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+  ];
+  const novo = {
+    id: `${prox.a}-${String(prox.m).padStart(2, "0")}`,
+    rotulo: `${nomes[prox.m - 1]} de ${prox.a}`,
+    receitas: mes.receitas.map((r) => ({ ...r, id: uid() })),
+    despesasFixas: mes.despesasFixas.map((d) => ({ ...d, id: uid() })),
+    cartoes: mes.cartoes.map((c) => {
+      const parcelamentos = c.parcelamentos
+        .filter((p) => p.atual < p.total)
+        .map((p) => ({ ...p, id: uid(), atual: p.atual + 1 }));
+      const fixos = c.fixos.map((f) => ({ ...f, id: uid() }));
+      return {
+        ...c,
+        fixos,
+        parcelamentos,
+        fatura: soma(fixos) + soma(parcelamentos),
+      };
+    }),
+  };
+  return novo;
+}
+
+/* ------------------------------------------------------------------ */
+/*  FORMATAÇÃO                                                         */
+/* ------------------------------------------------------------------ */
+const brl = (v) =>
+  (Number(v) || 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+const pct = (v) =>
+  `${((Number(v) || 0) * 100).toLocaleString("pt-BR", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })}%`;
+
+/* ------------------------------------------------------------------ */
+/*  COMPONENTES BASE                                                   */
+/* ------------------------------------------------------------------ */
+function Num({ children, size = 16, weight = 600, color = C.ink }) {
+  return (
+    <span
+      style={{
+        fontFamily: MONO,
+        fontSize: size,
+        fontWeight: weight,
+        color,
+        fontVariantNumeric: "tabular-nums",
+        letterSpacing: "-0.02em",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function Card({ children, style }) {
+  return (
+    <div
+      style={{
+        background: C.surface,
+        borderRadius: 14,
+        border: `1px solid ${C.line}`,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Eyebrow({ children, color = C.faint }) {
+  return (
+    <div
+      style={{
+        fontSize: 10.5,
+        fontWeight: 700,
+        letterSpacing: "0.09em",
+        textTransform: "uppercase",
+        color,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function parseValor(txt) {
+  if (typeof txt !== "string") return Number(txt) || 0;
+  let s = txt.replace(/[^\d.,-]/g, "").trim();
+  if (s === "" || s === "-") return null;
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  const n = Number(s);
+  return isNaN(n) ? null : n;
+}
+
+function ValorEditavel({ valor, onChange, size = 13 }) {
+  const [rascunho, setRascunho] = useState(null);
+  const editando = rascunho !== null;
+
+  const encerrar = () => {
+    const n = parseValor(rascunho);
+    if (n !== null) onChange(n);
+    setRascunho(null);
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      value={editando ? rascunho : brl(valor)}
+      onFocus={() => setRascunho(String(valor))}
+      onChange={(e) => setRascunho(e.target.value)}
+      onBlur={encerrar}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+        if (e.key === "Escape") {
+          setRascunho(null);
+          e.currentTarget.blur();
+        }
+      }}
+      style={{
+        width: 108,
+        textAlign: "right",
+        fontFamily: MONO,
+        fontSize: size,
+        fontWeight: 600,
+        color: C.ink,
+        fontVariantNumeric: "tabular-nums",
+        letterSpacing: "-0.02em",
+        padding: "5px 7px",
+        border: `1px solid ${editando ? C.conj : "transparent"}`,
+        borderRadius: 7,
+        background: editando ? "#FAFBFC" : "#F4F6F8",
+        outline: "none",
+      }}
+    />
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  MEDIDOR DE FOLGA — elemento central                                */
+/* ------------------------------------------------------------------ */
+function MedidorFolga({ p }) {
+  const track = Math.max(p.sobraReal, 1);
+  const dentro = p.saldo >= 0;
+  const pctPessoal = Math.min(Math.max(p.avulso / track, 0), 1) * 100;
+  const pctConj = Math.min(Math.max(p.metadeConj / track, 0), 1) * 100;
+  const excesso = dentro ? 0 : Math.min(Math.abs(p.saldo) / track, 1) * 100;
+
+  return (
+    <Card style={{ padding: 16, marginBottom: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          marginBottom: 2,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              width: 9,
+              height: 9,
+              borderRadius: 3,
+              background: p.cartao.cor,
+              display: "inline-block",
+            }}
+          />
+          <span style={{ fontSize: 16, fontWeight: 700, color: C.ink }}>
+            {p.cartao.dono}
+          </span>
+        </div>
+        <span style={{ fontSize: 12, color: C.faint }}>{p.cartao.nome}</span>
+      </div>
+
+      <div style={{ marginTop: 10, marginBottom: 12 }}>
+        <Eyebrow color={p.semFatura ? C.faint : dentro ? C.ok : C.bad}>
+          {p.semFatura
+            ? "Projeção — fatura ainda não lançada"
+            : dentro
+            ? "Ainda pode gastar"
+            : "Estourou o mês"}
+        </Eyebrow>
+        <Num size={30} weight={700} color={p.semFatura ? C.faint : dentro ? C.ok : C.bad}>
+          {brl(Math.abs(p.saldo))}
+        </Num>
+        {p.semFatura && (
+          <div style={{ fontSize: 11.5, color: C.faint, marginTop: 4, lineHeight: 1.4 }}>
+            Só mostra o comprometido. Lance a fatura real na aba Faturas.
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          height: 12,
+          borderRadius: 6,
+          background: "#EFF1F4",
+          border: `1px solid ${C.line}`,
+          display: "flex",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: `${pctPessoal}%`,
+            background: dentro ? p.cartao.cor : C.bad,
+            transition: "width .35s ease",
+          }}
+        />
+        <div
+          style={{
+            width: `${pctConj}%`,
+            background: dentro ? C.conj : C.bad,
+            opacity: dentro ? 0.45 : 0.75,
+            transition: "width .35s ease",
+          }}
+        />
+      </div>
+      {!dentro && (
+        <div
+          style={{
+            height: 6,
+            borderRadius: 3,
+            background: C.bad,
+            width: `${excesso}%`,
+            marginTop: 3,
+          }}
+        />
+      )}
+
+      <div style={{ marginTop: 12, display: "grid", gap: 6 }}>
+        <Linha rotulo="Sua sobra do mês" valor={p.sobraReal} />
+        <Linha
+          rotulo={`Gasto avulso no ${p.cartao.nome}`}
+          valor={-p.avulso}
+          cor={p.cartao.cor}
+        />
+        <Linha
+          rotulo="Sua metade do gasto avulso no Inter"
+          valor={-p.metadeConj}
+          cor={C.conj}
+        />
+      </div>
+
+      {p.foraDoRateio.length > 0 && (
+        <div
+          style={{
+            marginTop: 13,
+            paddingTop: 11,
+            borderTop: `1px dashed ${C.line}`,
+          }}
+        >
+          <Eyebrow color={C.fora}>Fora do rateio</Eyebrow>
+          <div style={{ marginTop: 7, display: "grid", gap: 5 }}>
+            {p.foraDoRateio.map((a) => (
+              <Linha key={a.id} rotulo={a.nome} valor={a.fatura} cor={C.fora} />
+            ))}
+          </div>
+          <div style={{ fontSize: 11.5, color: C.faint, marginTop: 7, lineHeight: 1.4 }}>
+            Não entra na conta acima nem é dividido com ninguém. Somando,
+            a fatura total do mês é {brl(p.cartao.fatura + p.foraTotal)}.
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function Linha({ rotulo, valor, cor }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 12,
+      }}
+    >
+      <span style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.3 }}>
+        {cor && (
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: 2,
+              background: cor,
+              display: "inline-block",
+              marginRight: 6,
+            }}
+          />
+        )}
+        {rotulo}
+      </span>
+      <Num size={13.5} weight={600} color={valor < 0 ? C.muted : C.ink}>
+        {brl(valor)}
+      </Num>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  ABA: RESUMO                                                        */
+/* ------------------------------------------------------------------ */
+function Resumo({ calc }) {
+  return (
+    <div>
+      <Card style={{ padding: 16, marginBottom: 12 }}>
+        <Eyebrow>Orçamento do mês</Eyebrow>
+        <div style={{ marginTop: 4, marginBottom: 14 }}>
+          <Num size={30} weight={700}>
+            {brl(calc.orcamento)}
+          </Num>
+        </div>
+        <div style={{ display: "grid", gap: 7 }}>
+          <Linha rotulo="Despesas fixas gerais" valor={-calc.fixasGerais} />
+          <Linha rotulo="Inter — fixos" valor={-calc.fixosConj} cor={C.conj} />
+          <Linha
+            rotulo="Inter — parcelamentos"
+            valor={-calc.parcConj}
+            cor={C.conj}
+          />
+          <div style={{ height: 1, background: C.line, margin: "4px 0" }} />
+          <div
+            style={{ display: "flex", justifyContent: "space-between" }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>
+              Despesa total
+            </span>
+            <Num size={15}>{brl(calc.despesaTotal)}</Num>
+          </div>
+          <div
+            style={{ display: "flex", justifyContent: "space-between" }}
+          >
+            <span style={{ fontSize: 13, color: C.muted }}>Restante</span>
+            <Num size={15}>{brl(calc.restante)}</Num>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: 4,
+              padding: "9px 11px",
+              borderRadius: 9,
+              background: "#F3F5F8",
+            }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>
+              Sobra pra cada
+            </span>
+            <Num size={17} weight={700}>
+              {brl(calc.sobraPraCada)}
+            </Num>
+          </div>
+        </div>
+      </Card>
+
+      {calc.pessoas.map((p) => (
+        <MedidorFolga key={p.cartao.id} p={p} />
+      ))}
+
+      <Card style={{ padding: 16 }}>
+        <Eyebrow color={C.conj}>Cartão conjunto — Banco Inter</Eyebrow>
+        <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+          <Linha rotulo="Fatura lançada" valor={calc.conjunto.fatura} />
+          <Linha rotulo="Já comprometido" valor={-calc.comprometidoConj} />
+          <div style={{ height: 1, background: C.line, margin: "3px 0" }} />
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 13, fontWeight: 700 }}>
+              Gasto avulso no Inter
+            </span>
+            <Num size={15}>{brl(calc.avulsoConj)}</Num>
+          </div>
+          <div style={{ fontSize: 11.5, color: C.faint, marginTop: 2 }}>
+            Rateado meio a meio: {brl(calc.metadeConj)} pra cada um.
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  ABA: FATURAS — a rotina mensal                                     */
+/* ------------------------------------------------------------------ */
+function Faturas({ mes, calc, setFatura }) {
+  return (
+    <div>
+      <div
+        style={{
+          fontSize: 12.5,
+          color: C.muted,
+          marginBottom: 12,
+          lineHeight: 1.45,
+        }}
+      >
+        É só isso que muda todo mês. Digite o valor de cada fatura e o resto se
+        recalcula sozinho.
+      </div>
+      {mes.cartoes.map((c) => {
+        const comp = soma(c.fixos) + soma(c.parcelamentos);
+        const avulso = c.fatura - comp;
+        const fora = c.tipo === "avulso";
+        return (
+          <Card
+            key={c.id}
+            style={{
+              padding: 16,
+              marginBottom: 12,
+              borderStyle: fora ? "dashed" : "solid",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 10,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span
+                  style={{
+                    width: 9,
+                    height: 9,
+                    borderRadius: 3,
+                    background: c.cor,
+                  }}
+                />
+                <span style={{ fontSize: 15, fontWeight: 700 }}>{c.nome}</span>
+              </div>
+              <span style={{ fontSize: 11.5, color: fora ? C.fora : C.faint }}>
+                {fora ? `${c.dono} · fora do rateio` : c.dono}
+              </span>
+            </div>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              value={c.fatura}
+              onChange={(e) => setFatura(c.id, e.target.value)}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "12px 13px",
+                fontFamily: MONO,
+                fontSize: 21,
+                fontWeight: 700,
+                color: C.ink,
+                border: `1.5px solid ${C.line}`,
+                borderRadius: 10,
+                background: "#FAFBFC",
+                outline: "none",
+              }}
+            />
+            <div style={{ marginTop: 11, display: "grid", gap: 5 }}>
+              <Linha rotulo="Fixos e parcelas já comprometidos" valor={-comp} />
+              <div
+                style={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: C.ink }}>
+                  Gasto avulso na fatura
+                </span>
+                <Num size={14} color={avulso < -0.005 ? C.bad : C.ink}>
+                  {brl(avulso)}
+                </Num>
+              </div>
+              {fora && (
+                <div style={{ fontSize: 11.5, color: C.fora, lineHeight: 1.4 }}>
+                  Aparece só no painel da Mel. Não altera o orçamento nem é
+                  dividido.
+                </div>
+              )}
+              {avulso < -0.005 && (
+                <div style={{ fontSize: 11.5, color: C.bad }}>
+                  A fatura ficou menor que o comprometido. Confira se algum
+                  parcelamento já encerrou.
+                </div>
+              )}
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  ABA: LANÇAMENTOS                                                   */
+/* ------------------------------------------------------------------ */
+function Lancamentos({ mes, calc, acoes }) {
+  const [novo, setNovo] = useState(null);
+
+  const grupos = [
+    {
+      chave: "receitas",
+      titulo: "Receitas do mês",
+      cor: C.ok,
+      itens: mes.receitas,
+      tipo: "receita",
+      editavel: true,
+      semCategoria: true,
+      base: calc.orcamento,
+      baseRotulo: "orçamento",
+    },
+    {
+      chave: "gerais",
+      titulo: "Despesas fixas gerais",
+      cor: C.conj,
+      itens: mes.despesasFixas,
+      tipo: "fixo",
+      editavel: true,
+      base: calc.orcamento,
+      baseRotulo: "orçamento",
+    },
+    ...mes.cartoes.flatMap((c) => {
+      const base =
+        c.tipo === "conjunto" ? calc.orcamento : calc.sobraPraCada;
+      const baseRotulo =
+        c.tipo === "conjunto" ? "orçamento" : c.tipo === "avulso" ? null : "sobra";
+      return [
+        {
+          chave: `${c.id}:fixos`,
+          titulo: `${c.nome} — fixos`,
+          cor: c.cor,
+          itens: c.fixos,
+          tipo: "fixo",
+          editavel: true,
+          cartaoId: c.id,
+          base,
+          baseRotulo,
+        },
+        {
+          chave: `${c.id}:parcelamentos`,
+          titulo: `${c.nome} — parcelamentos`,
+          cor: c.cor,
+          itens: c.parcelamentos,
+          tipo: "parcela",
+          editavel: false,
+          cartaoId: c.id,
+          base,
+          baseRotulo,
+        },
+      ];
+    }),
+  ];
+
+  return (
+    <div>
+      {grupos.map((g) => (
+        <Card key={g.chave} style={{ padding: 14, marginBottom: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 10,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: 3,
+                  background: g.cor,
+                }}
+              />
+              <span style={{ fontSize: 13.5, fontWeight: 700 }}>{g.titulo}</span>
+            </div>
+            <Num size={13.5}>{brl(soma(g.itens))}</Num>
+          </div>
+
+          <div style={{ display: "grid", gap: 1 }}>
+            {g.itens.length === 0 && (
+              <div style={{ fontSize: 12, color: C.faint, padding: "6px 0" }}>
+                Nada lançado aqui ainda.
+              </div>
+            )}
+            {g.itens.map((i) => (
+              <div
+                key={i.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "7px 0",
+                  borderTop: `1px solid ${C.line}`,
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: C.ink,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {i.nome}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: C.faint, marginTop: 1 }}>
+                    {!g.semCategoria && (i.categoria || "sem categoria")}
+                    {g.tipo === "parcela" && ` · ${i.atual} de ${i.total}`}
+                    {g.baseRotulo
+                      ? `${g.semCategoria ? "" : " · "}${pct(
+                          i.valor / (g.base || 1)
+                        )} da ${g.baseRotulo}`
+                      : " · fora do rateio"}
+                  </div>
+                </div>
+                {g.editavel ? (
+                  <ValorEditavel
+                    valor={i.valor}
+                    onChange={(v) => acoes.editarValor(g, i.id, v)}
+                  />
+                ) : (
+                  <Num size={13}>{brl(i.valor)}</Num>
+                )}
+                <button
+                  onClick={() => acoes.remover(g, i.id)}
+                  aria-label={`Excluir ${i.nome}`}
+                  style={{
+                    border: "none",
+                    background: "none",
+                    color: C.faint,
+                    fontSize: 17,
+                    cursor: "pointer",
+                    padding: "0 2px",
+                    lineHeight: 1,
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setNovo(g)}
+            style={{
+              marginTop: 10,
+              width: "100%",
+              padding: "9px",
+              borderRadius: 9,
+              border: `1px dashed ${C.line}`,
+              background: "none",
+              color: g.cor,
+              fontSize: 12.5,
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: SANS,
+            }}
+          >
+            + Adicionar{" "}
+            {g.tipo === "parcela"
+              ? "parcelamento"
+              : g.tipo === "receita"
+              ? "receita"
+              : "fixo"}
+          </button>
+        </Card>
+      ))}
+
+      {novo && (
+        <Formulario
+          grupo={novo}
+          onFechar={() => setNovo(null)}
+          onSalvar={(dados) => {
+            acoes.adicionar(novo, dados);
+            setNovo(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function Formulario({ grupo, onFechar, onSalvar }) {
+  const [nome, setNome] = useState("");
+  const [valor, setValor] = useState("");
+  const [categoria, setCategoria] = useState(CATEGORIAS[0]);
+  const [atual, setAtual] = useState("1");
+  const [total, setTotal] = useState("2");
+  const ehParcela = grupo.tipo === "parcela";
+  const ehReceita = grupo.tipo === "receita";
+  const valido = nome.trim() && valor !== "" && !isNaN(Number(valor));
+
+  const campo = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "10px 11px",
+    fontSize: 15,
+    border: `1px solid ${C.line}`,
+    borderRadius: 9,
+    background: "#FAFBFC",
+    outline: "none",
+    fontFamily: SANS,
+    color: C.ink,
+  };
+
+  return (
+    <div
+      onClick={onFechar}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(14,20,32,0.45)",
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
+        zIndex: 50,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: C.surface,
+          width: "100%",
+          maxWidth: 480,
+          borderRadius: "16px 16px 0 0",
+          padding: 18,
+          maxHeight: "88vh",
+          overflowY: "auto",
+        }}
+      >
+        <Eyebrow color={grupo.cor}>{grupo.titulo}</Eyebrow>
+        <div style={{ fontSize: 18, fontWeight: 700, margin: "4px 0 14px" }}>
+          {ehReceita
+            ? "Nova receita"
+            : ehParcela
+            ? "Novo parcelamento"
+            : "Novo gasto fixo"}
+        </div>
+
+        <div style={{ display: "grid", gap: 10 }}>
+          <input
+            autoFocus
+            placeholder="Nome"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            style={campo}
+          />
+          <input
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            placeholder={
+              ehParcela
+                ? "Valor da parcela"
+                : ehReceita
+                ? "Valor recebido"
+                : "Valor mensal"
+            }
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            style={{ ...campo, fontFamily: MONO }}
+          />
+          {ehParcela && (
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}
+                >
+                  Parcela atual
+                </div>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={atual}
+                  onChange={(e) => setAtual(e.target.value)}
+                  style={{ ...campo, fontFamily: MONO }}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}
+                >
+                  De quantas
+                </div>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={total}
+                  onChange={(e) => setTotal(e.target.value)}
+                  style={{ ...campo, fontFamily: MONO }}
+                />
+              </div>
+            </div>
+          )}
+          {!ehReceita && (
+            <div>
+              <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>
+                Categoria
+              </div>
+              <select
+                value={categoria}
+                onChange={(e) => setCategoria(e.target.value)}
+                style={campo}
+              >
+                {CATEGORIAS.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: 9, marginTop: 16 }}>
+          <button
+            onClick={onFechar}
+            style={{
+              flex: 1,
+              padding: 12,
+              borderRadius: 10,
+              border: `1px solid ${C.line}`,
+              background: "none",
+              fontSize: 14,
+              fontWeight: 600,
+              color: C.muted,
+              cursor: "pointer",
+              fontFamily: SANS,
+            }}
+          >
+            Cancelar
+          </button>
+          <button
+            disabled={!valido}
+            onClick={() =>
+              onSalvar({
+                nome: nome.trim(),
+                valor: Number(valor),
+                categoria,
+                atual: Number(atual),
+                total: Number(total),
+              })
+            }
+            style={{
+              flex: 2,
+              padding: 12,
+              borderRadius: 10,
+              border: "none",
+              background: valido ? grupo.cor : C.line,
+              color: valido ? "#fff" : C.faint,
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: valido ? "pointer" : "default",
+              fontFamily: SANS,
+            }}
+          >
+            Adicionar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  ABA: ANÁLISE                                                       */
+/* ------------------------------------------------------------------ */
+function Analise({ mes, calc }) {
+  const cats = useMemo(() => analisePorCategoria(mes, calc), [mes, calc]);
+  const totalGeral = cats.reduce((a, c) => a + c.total, 0);
+  const maior = Math.max(...cats.map((c) => c.total), 1);
+
+  return (
+    <div>
+      <Card style={{ padding: 16, marginBottom: 12 }}>
+        <Eyebrow>Comprometido no mês</Eyebrow>
+        <div style={{ marginTop: 4 }}>
+          <Num size={28} weight={700}>
+            {brl(totalGeral)}
+          </Num>
+        </div>
+        <div style={{ fontSize: 12, color: C.muted, marginTop: 6 }}>
+          Todo lançamento fixo e toda parcela dos três cartões, sem exceção.
+          Equivale a {pct(totalGeral / calc.orcamento)} do orçamento.
+        </div>
+      </Card>
+
+      <Card style={{ padding: 14 }}>
+        <div style={{ display: "grid", gap: 13 }}>
+          {cats.map((c) => (
+            <div key={c.nome}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  marginBottom: 5,
+                }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>
+                  {c.nome}
+                </span>
+                <span style={{ display: "flex", gap: 9, alignItems: "baseline" }}>
+                  <Num size={13}>{brl(c.total)}</Num>
+                  <span
+                    style={{
+                      fontFamily: MONO,
+                      fontSize: 11,
+                      color: C.faint,
+                      minWidth: 42,
+                      textAlign: "right",
+                    }}
+                  >
+                    {pct(c.pct)}
+                  </span>
+                </span>
+              </div>
+              <div
+                style={{
+                  height: 7,
+                  borderRadius: 4,
+                  background: "#F0F2F5",
+                  display: "flex",
+                  overflow: "hidden",
+                  width: `${(c.total / maior) * 100}%`,
+                  minWidth: 4,
+                }}
+              >
+                {c.partes.map((p) => (
+                  <div
+                    key={p.origem}
+                    title={p.origem}
+                    style={{
+                      width: `${(p.valor / c.total) * 100}%`,
+                      background: p.cor,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: 13,
+            marginTop: 15,
+            paddingTop: 12,
+            borderTop: `1px solid ${C.line}`,
+            flexWrap: "wrap",
+          }}
+        >
+          {[
+            { n: "Conjunto", c: C.conj },
+            { n: "Lauro", c: C.lauro },
+            { n: "Mel", c: C.mel },
+            { n: "Fora do rateio", c: C.fora },
+          ].map((l) => (
+            <span
+              key={l.n}
+              style={{
+                fontSize: 11,
+                color: C.muted,
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+              }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 2,
+                  background: l.c,
+                }}
+              />
+              {l.n}
+            </span>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  APP                                                                */
+/* ------------------------------------------------------------------ */
+function App() {
+  const [dados, setDados] = useState(null);
+  const [aba, setAba] = useState("resumo");
+  const [erroStorage, setErroStorage] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = localStorage.getItem("financas:dados");
+        setDados(r ? JSON.parse(r) : dadosIniciais());
+      } catch {
+        setDados(dadosIniciais());
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!dados) return;
+    (async () => {
+      try {
+        localStorage.setItem("financas:dados", JSON.stringify(dados));
+      } catch {
+        setErroStorage(true);
+      }
+    })();
+  }, [dados]);
+
+  if (!dados)
+    return (
+      <div
+        style={{
+          fontFamily: SANS,
+          padding: 40,
+          textAlign: "center",
+          color: C.muted,
+        }}
+      >
+        Abrindo…
+      </div>
+    );
+
+  const mes = dados.meses.find((m) => m.id === dados.mesAtivo) || dados.meses[0];
+  const calc = calcular(mes);
+
+  const atualizarMes = (fn) =>
+    setDados((d) => ({
+      ...d,
+      meses: d.meses.map((m) => (m.id === mes.id ? fn(structuredClone(m)) : m)),
+    }));
+
+  const setFatura = (cartaoId, valor) =>
+    atualizarMes((m) => {
+      const c = m.cartoes.find((x) => x.id === cartaoId);
+      c.fatura = valor === "" ? 0 : Number(valor);
+      return m;
+    });
+
+  const alvo = (m, grupo) => {
+    if (grupo.chave === "receitas") return m.receitas;
+    if (grupo.chave === "gerais") return m.despesasFixas;
+    const c = m.cartoes.find((x) => x.id === grupo.cartaoId);
+    return grupo.tipo === "parcela" ? c.parcelamentos : c.fixos;
+  };
+
+  const acoes = {
+    adicionar: (grupo, dadosItem) =>
+      atualizarMes((m) => {
+        const item =
+          grupo.tipo === "parcela"
+            ? parc(
+                dadosItem.nome,
+                dadosItem.valor,
+                dadosItem.atual,
+                dadosItem.total,
+                dadosItem.categoria
+              )
+            : it(
+                dadosItem.nome,
+                dadosItem.valor,
+                grupo.tipo === "receita" ? undefined : dadosItem.categoria
+              );
+        alvo(m, grupo).push(item);
+        return m;
+      }),
+    remover: (grupo, id) =>
+      atualizarMes((m) => {
+        const lista = alvo(m, grupo);
+        const i = lista.findIndex((x) => x.id === id);
+        if (i >= 0) lista.splice(i, 1);
+        return m;
+      }),
+    editarValor: (grupo, id, valor) =>
+      atualizarMes((m) => {
+        const item = alvo(m, grupo).find((x) => x.id === id);
+        if (item) item.valor = valor;
+        return m;
+      }),
+  };
+
+  const criarProximoMes = () => {
+    const ultimo = dados.meses[dados.meses.length - 1];
+    const novo = avancarMes(ultimo);
+    if (dados.meses.some((m) => m.id === novo.id)) {
+      setDados((d) => ({ ...d, mesAtivo: novo.id }));
+      return;
+    }
+    setDados((d) => ({ ...d, meses: [...d.meses, novo], mesAtivo: novo.id }));
+    setAba("faturas");
+  };
+
+  const abas = [
+    ["resumo", "Resumo"],
+    ["faturas", "Faturas"],
+    ["lancamentos", "Lançamentos"],
+    ["analise", "Análise"],
+  ];
+
+  return (
+    <div
+      style={{
+        fontFamily: SANS,
+        background: C.bg,
+        minHeight: "100vh",
+        color: C.ink,
+        WebkitFontSmoothing: "antialiased",
+      }}
+    >
+      <style>{`
+        * { -webkit-tap-highlight-color: transparent; }
+        input, select, button { font-family: inherit; }
+        input:focus, select:focus { border-color: ${C.conj} !important; }
+        button:focus-visible { outline: 2px solid ${C.conj}; outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+      `}</style>
+
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: "14px 14px 90px" }}>
+        <header style={{ marginBottom: 14 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 10,
+            }}
+          >
+            <div>
+              <Eyebrow>Lauro e Mel</Eyebrow>
+              <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em" }}>
+                {mes.rotulo}
+              </div>
+            </div>
+            <button
+              onClick={criarProximoMes}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 9,
+                border: `1px solid ${C.line}`,
+                background: C.surface,
+                fontSize: 12,
+                fontWeight: 600,
+                color: C.conj,
+                cursor: "pointer",
+              }}
+            >
+              Abrir próximo mês
+            </button>
+          </div>
+
+          <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
+            {dados.meses.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => setDados((d) => ({ ...d, mesAtivo: m.id }))}
+                style={{
+                  padding: "6px 11px",
+                  borderRadius: 20,
+                  border: `1px solid ${m.id === mes.id ? C.ink : C.line}`,
+                  background: m.id === mes.id ? C.ink : C.surface,
+                  color: m.id === mes.id ? "#fff" : C.muted,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  cursor: "pointer",
+                }}
+              >
+                {m.rotulo.split(" de ")[0]}
+              </button>
+            ))}
+          </div>
+        </header>
+
+        {erroStorage && (
+          <div
+            style={{
+              fontSize: 11.5,
+              color: C.bad,
+              marginBottom: 10,
+              padding: "8px 10px",
+              background: "#FDF0F1",
+              borderRadius: 8,
+            }}
+          >
+            Não consegui gravar as alterações. Elas valem só enquanto esta tela
+            estiver aberta.
+          </div>
+        )}
+
+        {aba === "resumo" && <Resumo calc={calc} />}
+        {aba === "faturas" && (
+          <Faturas mes={mes} calc={calc} setFatura={setFatura} />
+        )}
+        {aba === "lancamentos" && (
+          <Lancamentos mes={mes} calc={calc} acoes={acoes} />
+        )}
+        {aba === "analise" && <Analise mes={mes} calc={calc} />}
+      </div>
+
+      <nav
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: "rgba(255,255,255,0.94)",
+          backdropFilter: "blur(10px)",
+          borderTop: `1px solid ${C.line}`,
+          display: "flex",
+          justifyContent: "center",
+          zIndex: 20,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            maxWidth: 480,
+            padding: "7px 8px 12px",
+          }}
+        >
+          {abas.map(([id, rot]) => (
+            <button
+              key={id}
+              onClick={() => setAba(id)}
+              style={{
+                flex: 1,
+                padding: "8px 2px",
+                border: "none",
+                background: "none",
+                fontSize: 12,
+                fontWeight: aba === id ? 700 : 500,
+                color: aba === id ? C.ink : C.faint,
+                cursor: "pointer",
+                borderTop: `2px solid ${aba === id ? C.ink : "transparent"}`,
+              }}
+            >
+              {rot}
+            </button>
+          ))}
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+
+<script>
+// Registra o service worker para funcionar offline e permitir instalação como app
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
