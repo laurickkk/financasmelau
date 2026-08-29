@@ -1,5 +1,5 @@
 // Service worker: guarda o app em cache para abrir offline.
-const CACHE = "financas-v3";
+const CACHE = "financas-v4";
 const ARQUIVOS = [
   "./",
   "./index.html",
@@ -28,6 +28,8 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
+  // Chamadas ao Supabase sempre vão à rede, nunca ao cache.
+  if (e.request.url.includes("supabase.co")) return;
   e.respondWith(
     caches.match(e.request).then((resp) => resp || fetch(e.request))
   );
