@@ -1,5 +1,5 @@
 // Service worker: guarda o app em cache para abrir offline.
-const CACHE = "financas-v7";
+const CACHE = "financas-v8";
 const ARQUIVOS = [
   "./",
   "./index.html",
