@@ -1,8 +1,9 @@
-// Service worker simples: guarda o app em cache para abrir offline.
-const CACHE = "financas-v1";
+// Service worker: guarda o app em cache para abrir offline.
+const CACHE = "financas-v2";
 const ARQUIVOS = [
   "./",
   "./index.html",
+  "./bundle.js",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
@@ -27,8 +28,6 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-  // As bibliotecas (React, Babel) vêm da rede; o resto tenta o cache primeiro.
-  if (e.request.url.includes("unpkg.com")) return;
   e.respondWith(
     caches.match(e.request).then((resp) => resp || fetch(e.request))
   );
